@@ -168,6 +168,7 @@
 	var rxCharacteristic;
 	var txCharacteristic;
 	let sendCount = 0;
+	let btBuff ="";
 
 	var connected = false;
 	let logDisplay = 'log console\n';
@@ -267,20 +268,32 @@
 	}
 
 	function handleNotifications(event) {
-		logDisplay += 'notification';
+		logDisplay += 'btMsg:\n';
 		let value = event.target.value;
 		// Convert raw data bytes to character values and use these to
 		// construct a string.
-		let str = '';
+		let chr = '';
+		let endMsg = false;
 		for (let i = 0; i < value.byteLength; i++) {
-			str += String.fromCharCode(value.getUint8(i));
+			
+			chr = String.fromCharCode(value.getUint8(i));
+			btBuff += chr
+			if(chr === '\n'){
+				endMsg = true;
+				break;
+			}
 		}
-		logDisplay += str;
+		if(endMsg){
+			logDisplay += btBuff;
+			btBuff = "";
+		}
+		
 	}
 
 	function nusSendString(s) {
 		if (bleDevice && bleDevice.gatt.connected) {
-			logDisplay += 'send: ' + s;
+			//logDisplay += 'send: ' + s;
+			s += '\n';
 			let val_arr = new Uint8Array(s.length);
 			for (let i = 0; i < s.length; i++) {
 				let val = s[i].charCodeAt(0);
