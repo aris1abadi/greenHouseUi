@@ -14,9 +14,7 @@ let clientId = "CL" + Math.random().toString(16).substr(2, 4).toUpperCase();
 //const host = 'ws://abadinet.my.id:2020'
 //const host = 'wss://node-red.balingtansmart.my.id/ws'
 //const host =  'ws://'+ get(brokerUseStore) + '/mqtt:' + get(brokerPortUseStore);
-const brokerUrl = dev
-  ? "ws://mqtt.eclipseprojects.io/mqtt:80"
-  : "wss://mqtt.eclipseprojects.io/mqtt:443";
+const brokerUrl = "wss://mqtt.eclipseprojects.io/mqtt:443";
 
 let lastMsg = null;
 let dataTaskNow;
