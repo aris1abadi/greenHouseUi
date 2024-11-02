@@ -278,13 +278,15 @@
 			
 			chr = String.fromCharCode(value.getUint8(i));
 			btBuff += chr
-			if(chr === '\n'){
+			if(chr == '\n'){
 				endMsg = true;
 				break;
 			}
 		}
 		if(endMsg){
-			logDisplay += btBuff;
+			if(btBuff.length > 5){
+				logDisplay += btBuff;
+			}			
 			btBuff = "";
 		}
 		
