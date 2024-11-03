@@ -228,6 +228,8 @@
 		alert("Target bawah: " + batasBawahValue)
 	}
 
+	
+
 	function batasAtasChange(idx){
 		const tp = "auto" + $dataTask[setupIndex].nama;
 		if(tp === "autoIntermittent"){
