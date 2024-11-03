@@ -182,23 +182,63 @@
 
 		if (num == 1) {
 			//kirimMsg(type, num, cmd, msg)
-			kirimMsg(tp,1,"aktuatorUse1",(aktuator1Select + 1))
-			alert("pilih aktuator1 " + aktuator1Select);
+			kirimMsg(tp,1,"aktuatorUse1",String(aktuator1Select + 1))
+			$dataTask[setupIndex].aktuatorUse1 = aktuator1Select + 1
+			alert("pilih aktuator1 " + (aktuator1Select + 1));
 		} else if (num == 2) {
-			alert("pilih aktuator2 " + aktuator2Select);
-			kirimMsg(tp,1,"aktuatorUse2",(aktuator2Select + 1))
+			kirimMsg(tp,1,"aktuatorUse2",String(aktuator2Select + 1))
+			$dataTask[setupIndex].aktuatorUse2 = aktuator2Select + 1
+			alert("pilih aktuator2 " + (aktuator2Select + 1));
+			
+		}else if (num == 3) {
+			kirimMsg(tp,1,"aktuatorMixA",String(aktuatorMixASelect + 1))
+			$dataTask[setupIndex].aktuatorMixA = aktuatorMixASelect + 1
+			alert("pilih aktuatorMix A " + (aktuatorMixASelect + 1));
+			
+		}else if (num == 4) {
+			kirimMsg(tp,1,"aktuatorMixB",String(aktuatorMixBSelect + 1))
+			$dataTask[setupIndex].aktuatorMixB = aktuatorMixBSelect + 1
+			alert("pilih aktuatorMix B " + (aktuatorMixBSelect + 1));
+			
+		}else if (num == 5) {
+			kirimMsg(tp,1,"aktuatorMixC",String(aktuatorMixCSelect + 1))
+			$dataTask[setupIndex].aktuatorMixC = aktuatorMixCSelect + 1
+			alert("pilih aktuatorMix C " + (aktuatorMixCSelect + 1));
+			
 		}
 	}
 	function sensorSelect_click() {
-		alert("sensor temperture select: " + sensorSelect);
+		const tp = "auto" + $dataTask[setupIndex].nama;
+		kirimMsg(tp,1,"sensorUse1",String(sensorSelect + 1))
+		$dataTask[setupIndex].sensorUse1 = sensorSelect + 1;			
+		
+		alert("sensor temperture select: " + sensorSelect + 1);
 	}
 
 	function batasBawahChange(idx){
-		alert("Batas bawah: " + batasBawahValue)
+		const tp = "auto" + $dataTask[setupIndex].nama;
+		if(tp === "autoIntermittent"){
+			kirimMsg(tp,1,"targetBawah",String(batasBawahValue + 15))
+			$dataTask[setupIndex].targetBawah = batasBawahValue + 15;
+		}else{
+			kirimMsg(tp,1,"targetBawah",String(batasBawahValue))
+			$dataTask[setupIndex].targetBawah = batasBawahValue;
+		}
+					
+		alert("Target bawah: " + batasBawahValue)
 	}
 
 	function batasAtasChange(idx){
-		alert("Batas Atas: " + batasAtasValue)
+		const tp = "auto" + $dataTask[setupIndex].nama;
+		if(tp === "autoIntermittent"){
+			kirimMsg(tp,1,"targetAtas",String(batasAtasValue + 15))	
+			$dataTask[setupIndex].targetAtas = batasAtasValue + 15;
+		}else{
+			kirimMsg(tp,1,"targetAtas",String(batasAtasValue))	
+			$dataTask[setupIndex].targetAtas = batasAtasValue;	
+		}
+			
+		alert("Target atas: " + batasAtasValue)
 	}
 
 	function targetAValue_change(){
