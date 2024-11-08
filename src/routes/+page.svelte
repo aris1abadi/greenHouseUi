@@ -11,6 +11,9 @@
 		initMqtt,
 		kirimMsg,
 		cekMqttMsg,
+        flowAPersen,
+        flowBPersen,
+        flowCPersen,
 	} from "$lib/stores";
 
 	let defaultModal = false;
@@ -27,6 +30,7 @@
 	let aktuatorMixASelect = 0;
 	let aktuatorMixBSelect = 0;
 	let aktuatorMixCSelect = 0;
+	let aktuatorAdukSelect = 0;
 	let aktuatorMixOutSelect = 0;
 	let targetAValue = 0;
 	let targetBValue = 0;
@@ -52,6 +56,7 @@
 		const unsubscribe = mqttData.subscribe((data) => {
 			cekMqttMsg(data); // Panggil fungsi untuk memperbarui sensorData
 		});
+		openFullscreen();
 
 		// Unsubscribe ketika komponen dibongkar
 		return () => {
@@ -115,13 +120,32 @@
 	];
 
 	let setupIndex = 0;
+	function openFullscreen() {
+		const element = document.documentElement;
+		if (element.requestFullscreen) {
+			element.requestFullscreen();
+		} else if (element.mozRequestFullScreen) {
+			element.mozRequestFullScreen();
+		} else if (element.webkitRequestFullscreen) {
+			element.webkitRequestFullscreen();
+		} else if (element.msRequestFullscreen) {
+			element.msRequestFullscreen();
+		}
+	}
 	// @ts-ignore
 	function enableClick(idx) {
 		const tp = "auto" + $dataTask[idx].nama;
 		if ($dataTask[idx].enable == 0) {
 			$dataTask[idx].enable = 1;
+
+			$dataTask[idx].flowAValue = 0;
+			$dataTask[idx].flowBValue = 0;
+			$dataTask[idx].flowCValue = 0;
 		} else {
 			$dataTask[idx].enable = 0;
+			$dataTask[idx].flowAValue = 0;
+			$dataTask[idx].flowBValue = 0;
+			$dataTask[idx].flowCValue = 0;
 		}
 		kirimMsg(tp, 1, "enable", String($dataTask[idx].enable));
 	}
@@ -141,12 +165,12 @@
 		aktuatorMixASelect = $dataTask[idx].aktuatorMixA - 1;
 		aktuatorMixBSelect = $dataTask[idx].aktuatorMixB - 1;
 		aktuatorMixCSelect = $dataTask[idx].aktuatorMixC - 1;
+		aktuatorAdukSelect = $dataTask[idx].aktuatorAduk - 1;
+		aktuatorMixOutSelect = $dataTask[idx].aktuatorMixOut - 1;
 
-		targetAValue = $dataTask[idx].targetMixA
-		targetBValue = $dataTask[idx].targetMixB
-		targetCValue = $dataTask[idx].targetMixC
-
-
+		targetAValue = $dataTask[idx].targetMixA * 100;
+		targetBValue = $dataTask[idx].targetMixB * 100;
+		targetCValue = $dataTask[idx].targetMixC * 100;
 
 		const nm = $dataTask[idx].nama;
 		const nama = nm.trim();
@@ -182,77 +206,102 @@
 
 		if (num == 1) {
 			//kirimMsg(type, num, cmd, msg)
-			kirimMsg(tp,1,"aktuatorUse1",String(aktuator1Select + 1))
-			$dataTask[setupIndex].aktuatorUse1 = aktuator1Select + 1
+			kirimMsg(tp, 1, "aktuatorUse1", String(aktuator1Select + 1));
+			$dataTask[setupIndex].aktuatorUse1 = aktuator1Select + 1;
 			alert("pilih aktuator1 " + (aktuator1Select + 1));
 		} else if (num == 2) {
-			kirimMsg(tp,1,"aktuatorUse2",String(aktuator2Select + 1))
-			$dataTask[setupIndex].aktuatorUse2 = aktuator2Select + 1
+			kirimMsg(tp, 1, "aktuatorUse2", String(aktuator2Select + 1));
+			$dataTask[setupIndex].aktuatorUse2 = aktuator2Select + 1;
 			alert("pilih aktuator2 " + (aktuator2Select + 1));
-			
-		}else if (num == 3) {
-			kirimMsg(tp,1,"aktuatorMixA",String(aktuatorMixASelect + 1))
-			$dataTask[setupIndex].aktuatorMixA = aktuatorMixASelect + 1
+		} else if (num == 3) {
+			kirimMsg(tp, 1, "aktuatorMixA", String(aktuatorMixASelect + 1));
+			$dataTask[setupIndex].aktuatorMixA = aktuatorMixASelect + 1;
 			alert("pilih aktuatorMix A " + (aktuatorMixASelect + 1));
-			
-		}else if (num == 4) {
-			kirimMsg(tp,1,"aktuatorMixB",String(aktuatorMixBSelect + 1))
-			$dataTask[setupIndex].aktuatorMixB = aktuatorMixBSelect + 1
+		} else if (num == 4) {
+			kirimMsg(tp, 1, "aktuatorMixB", String(aktuatorMixBSelect + 1));
+			$dataTask[setupIndex].aktuatorMixB = aktuatorMixBSelect + 1;
 			alert("pilih aktuatorMix B " + (aktuatorMixBSelect + 1));
-			
-		}else if (num == 5) {
-			kirimMsg(tp,1,"aktuatorMixC",String(aktuatorMixCSelect + 1))
-			$dataTask[setupIndex].aktuatorMixC = aktuatorMixCSelect + 1
+		} else if (num == 5) {
+			kirimMsg(tp, 1, "aktuatorMixC", String(aktuatorMixCSelect + 1));
+			$dataTask[setupIndex].aktuatorMixC = aktuatorMixCSelect + 1;
 			alert("pilih aktuatorMix C " + (aktuatorMixCSelect + 1));
-			
 		}
 	}
 	function sensorSelect_click() {
 		const tp = "auto" + $dataTask[setupIndex].nama;
-		kirimMsg(tp,1,"sensorUse1",String(sensorSelect + 1))
-		$dataTask[setupIndex].sensorUse1 = sensorSelect + 1;			
-		
+		kirimMsg(tp, 1, "sensorUse1", String(sensorSelect + 1));
+		$dataTask[setupIndex].sensorUse1 = sensorSelect + 1;
+
 		alert("sensor temperture select: " + sensorSelect + 1);
 	}
 
-	function batasBawahChange(idx){
+	function batasBawahChange(idx) {
 		const tp = "auto" + $dataTask[setupIndex].nama;
-		if(tp === "autoIntermittent"){
-			kirimMsg(tp,1,"targetBawah",String(batasBawahValue + 15))
+		if (tp === "autoIntermittent") {
+			kirimMsg(tp, 1, "targetBawah", String(batasBawahValue + 15));
 			$dataTask[setupIndex].targetBawah = batasBawahValue + 15;
-		}else{
-			kirimMsg(tp,1,"targetBawah",String(batasBawahValue))
+		} else {
+			kirimMsg(tp, 1, "targetBawah", String(batasBawahValue));
 			$dataTask[setupIndex].targetBawah = batasBawahValue;
 		}
-					
-		alert("Target bawah: " + batasBawahValue)
+
+		alert("Target bawah: " + batasBawahValue);
 	}
 
-	
-
-	function batasAtasChange(idx){
+	function batasAtasChange(idx) {
 		const tp = "auto" + $dataTask[setupIndex].nama;
-		if(tp === "autoIntermittent"){
-			kirimMsg(tp,1,"targetAtas",String(batasAtasValue + 15))	
+		if (tp === "autoIntermittent") {
+			kirimMsg(tp, 1, "targetAtas", String(batasAtasValue + 15));
 			$dataTask[setupIndex].targetAtas = batasAtasValue + 15;
-		}else{
-			kirimMsg(tp,1,"targetAtas",String(batasAtasValue))	
-			$dataTask[setupIndex].targetAtas = batasAtasValue;	
+		} else {
+			kirimMsg(tp, 1, "targetAtas", String(batasAtasValue));
+			$dataTask[setupIndex].targetAtas = batasAtasValue;
 		}
-			
-		alert("Target atas: " + batasAtasValue)
+
+		alert("Target atas: " + batasAtasValue);
 	}
 
-	function targetAValue_change(){
-
+	function targetAValue_change() {
+		const tp = "auto" + $dataTask[setupIndex].nama;
+		kirimMsg(tp, 1, "targetMixA", String(targetAValue / 100));
+		$dataTask[setupIndex].targetMixA = targetAValue / 100;
+		alert(
+			"Target " +
+				$dataTask[setupIndex].namaMixA +
+				":" +
+				targetAValue +
+				"mL",
+		);
 	}
 
-	function targetBValue_change(){
-		
+	function targetBValue_change() {
+		const tp = "auto" + $dataTask[setupIndex].nama;
+		kirimMsg(tp, 1, "targetMixB", String(targetBValue / 100));
+		$dataTask[setupIndex].targetMixB = targetBValue / 100;
+		alert(
+			"Target " +
+				$dataTask[setupIndex].namaMixB +
+				":" +
+				targetBValue +
+				"mL",
+		);
 	}
 
-	function targetCValue_change(){
-		
+	function targetCValue_change() {
+		const tp = "auto" + $dataTask[setupIndex].nama;
+		kirimMsg(tp, 1, "targetMixC", String(targetCValue / 100));
+		$dataTask[setupIndex].targetMixC = targetCValue / 100;
+		alert(
+			"Target " +
+				$dataTask[setupIndex].namaMixC +
+				":" +
+				targetCValue +
+				"mL",
+		);
+	}
+
+	function mixAClick() {
+		alert("nama MixA click");
 	}
 
 	//update dataTask
@@ -460,7 +509,7 @@
 					class="h-24 w-full justify-items-center"
 					on:dblclick={() => setupClick(idx)}
 				>
-					{#if dataShow.nama === "Intermittent"}
+					{#if dataShow.inverseMode === 3}
 						<div
 							class="grid grid-cols-2 gap-2 place-items-center w-full h-24 mt-2"
 						>
@@ -491,45 +540,52 @@
 								</div>
 							</div>
 						</div>
-					{:else if dataShow.nama === "ABMix"}
+					{:else if dataShow.inverseMode === 2}
 						<div class="w-full h-full flex justify-center">
-							<div class="h-full w-3/4 mt-2">
+							<div class="h-full w-5/6 mt-2">
+								<!-- Mix A-->
 								<div class="text-xs">
-									{dataShow.mixANama}({dataShow.targetMixA})
+									{dataShow.mixANama}({dataShow.targetMixA *
+										100}mL) > {dataShow.flowAValue}
 								</div>
 								<div
 									class="w-full bg-gray-200 rounded-full h-1.5"
 								>
 									<div
-										class="h-1.5 bg-orange-500 rounded-full"
-										style="width: 65%;"
+										class="h-1.5 bg-blue-600 rounded-full"
+										style="width: {$flowAPersen}%;"
 									></div>
 								</div>
 
-								<div class="text-xs mt-1">
-									{dataShow.mixBNama}({dataShow.targetMixB})
+								<div class="text-xs">
+									{dataShow.mixBNama}({dataShow.targetMixB *
+										100}mL) > {dataShow.flowBValue}
 								</div>
 								<div
 									class="w-full bg-gray-200 rounded-full h-1.5"
 								>
 									<div
-										class="h-1.5 bg-orange-500 rounded-full"
-										style="width: 65%;"
+										class="h-1.5 bg-blue-500 rounded-full"
+										style="width: {$flowBPersen}%;"
+									></div>
+								</div>
+								<!-- Mix C-->
+								<div class="text-xs">
+									{dataShow.mixCNama}({dataShow.targetMixC *
+										100}mL) > {dataShow.flowCValue}
+								</div>
+								<div
+									class="w-full bg-gray-200 rounded-full h-1.5"
+								>
+									<div
+										class="h-1.5 bg-blue-600 rounded-full"
+										style="width: {$flowCPersen}%;"
 									></div>
 								</div>
 
-								<div class="text-xs mt-1">
-									{dataShow.mixCNama}({dataShow.targetMixC})
-								</div>
-								<div
-									class="w-full bg-gray-200 rounded-full h-1.5"
-								>
-									<div
-										class="h-1.5 bg-orange-500 rounded-full"
-										style="width: 65%;"
-									></div>
-								</div>
+								<div class="text-xs">Aduk({dataShow.mixingTarget}detik) > {dataShow.mixingCount}</div>
 							</div>
+							
 						</div>
 					{:else}
 						<div
@@ -538,7 +594,11 @@
 							{dataShow.sensorValue}
 						</div>
 						<div class="text-center font-mono text-xs h-4 mt-4">
-							{dataShow.targetBawah} ~ {dataShow.targetAtas}
+							{#if dataShow.inverseMode === 1}
+								ON:{dataShow.targetBawah} ~ OFF:{dataShow.targetAtas}
+							{:else if dataShow.inverseMode === 0}
+								OFF:{dataShow.targetBawah} ~ ON:{dataShow.targetAtas}
+							{/if}
 						</div>
 					{/if}
 				</div>
@@ -551,30 +611,36 @@
 	<div>
 		<!-- bluethooth -->
 		<div class="w-full h-full grid justify-items-center P-4">
-			<button on:click={() => connectionToggle()} type="button" class={connected?  "mt-8 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800" : "mt-8 py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700" }>
-			{#if connected == true}
+			<button
+				on:click={() => connectionToggle()}
+				type="button"
+				class={connected
+					? "mt-8 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+					: "mt-8 py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"}
+			>
+				{#if connected == true}
 					Disconnect
 				{:else}
 					Connect Bluethooth
 				{/if}
-		</button>
-		{#if connected}	
-			<button
-				class="w-1/4 h-8 border border-black mt-8"
-				on:click={() => tes()}>tes</button
-			>
-			<div
-				class=" mt-4 w-11/12 h-64 container mx-auto overflow-auto border border-black"
-			>
-				{logDisplay}
-			</div>
+			</button>
+			{#if connected}
+				<button
+					class="w-1/4 h-8 border border-black mt-8"
+					on:click={() => tes()}>tes</button
+				>
+				<div
+					class=" mt-4 w-11/12 h-64 container mx-auto overflow-auto border border-black"
+				>
+					{logDisplay}
+				</div>
 			{/if}
 		</div>
 	</div>
 
 	<Modal class="w-6/10" title={setupTitle} bind:open={defaultModal} autoclose>
 		<form class="max-w-sm mx-auto grid grid-cols-2 gap-2">
-			{#if $dataTask[setupIndex].nama === "ABMix"}
+			{#if $dataTask[setupIndex].inverseMode === 2}
 				<div>
 					<label
 						for="small3"
@@ -657,7 +723,6 @@
 							on:dragend={() => targetBValue_change()}
 						/>
 					</span> mL
-
 				</div>
 
 				<div>
@@ -687,9 +752,9 @@
 						<NumberSpinner
 							id="targetC"
 							bind:value={targetCValue}
-							min="1"
-							max="30"
-							step="1"
+							min="100"
+							max="30000"
+							step="100"
 							mainStyle="color:#aaa; width:80px; border-radius:20px"
 							focusStyle="color:#06f"
 							draggingStyle="border-color:#f00"
@@ -699,20 +764,81 @@
 							cursor="pointer"
 							on:dragend={() => targetCValue_change()}
 						/>
-					</span> liter
-				</div>
-				<hr/>
-				<hr/>
-
-				<div>
-					<label for="namaMixA" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama MixA</label>
-					<input type="text" id="namaMixA" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder={$dataTask[setupIndex].mixANama} required />
+					</span> mL
 				</div>
 
 				<div>
-					<label for="namaMixB" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nama MixB</label>
-					<input type="text" id="namaMixB" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder={$dataTask[setupIndex].mixBNama} required />
+					<label
+						for="small6"
+						class="block mb-1 text-xs dark:text-white"
+						>Aktuator Aduk</label
+					>
+					<select
+						bind:value={aktuatorAdukSelect}
+						on:change={() => aktuatorSelect_click(5)}
+						id="small6"
+						class="block w-full p-2 mb-1 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+					>
+						{#each aktuatorList as aktuator, idx}
+							<option value={idx}>{aktuator}</option>
+						{/each}
+					</select>
 				</div>
+
+				<div>
+					<label
+						for="small7"
+						class="block mb-1 text-xs dark:text-white"
+						>Aktuator Mix Out</label
+					>
+					<select
+						bind:value={aktuatorMixOutSelect}
+						on:change={() => aktuatorSelect_click(6)}
+						id="small7"
+						class="block w-full p-2 mb-1 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+					>
+						{#each aktuatorList as aktuator, idx}
+							<option value={idx}>{aktuator}</option>
+						{/each}
+					</select>
+				</div>
+
+				<hr />
+				<hr />
+
+				<div>
+					<label
+						for="namaMixA"
+						class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+						>Nama MixA</label
+					>
+					<input
+						type="text"
+						id="namaMixA"
+						on:mouseenter={() => mixAClick()}
+						class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+						placeholder={$dataTask[setupIndex].mixANama}
+						required
+					/>
+				</div>
+
+				<div>
+					<label
+						for="namaMixB"
+						class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
+						>Nama MixB</label
+					>
+					<input
+						type="text"
+						id="namaMixB"
+						class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+						placeholder={$dataTask[setupIndex].mixBNama}
+						required
+					/>
+				</div>
+
+				<Button color="blue">Simpan Nama A</Button>
+				<Button color="blue">Simpan Nama B</Button>
 			{:else}
 				<div>
 					<label
@@ -749,7 +875,7 @@
 			{/if}
 		</form>
 
-		{#if $dataTask[setupIndex].nama === "ABMix"}
+		{#if $dataTask[setupIndex].inverseMode === 2}
 			<div></div>
 		{:else}
 			<div class="my-0">
@@ -790,7 +916,6 @@
 					fastStyle="color:#f00"
 					slowStyle="color:#0c0"
 					cursor="pointer"
-
 					on:dragend={() => batasBawahChange(setupIndex)}
 				/>
 
@@ -812,8 +937,7 @@
 		{/if}
 
 		<svelte:fragment slot="footer">
-			<Button on:click={() => alert('Perubahan Disimpan')}>Simpan</Button>
-			<Button color="alternative">Batal</Button>
+			<Button color="red">Keluar</Button>
 		</svelte:fragment>
 	</Modal>
 </section>

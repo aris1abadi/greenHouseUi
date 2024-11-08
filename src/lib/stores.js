@@ -4,6 +4,9 @@ import mqtt from "mqtt";
 import { dev } from "$app/environment";
 
 export const dataTask = writable([]);
+export let flowAPersen = writable();
+export let flowBPersen = writable();
+export let flowCPersen = writable();
 
 export const mqttClient = writable(null);
 export const mqttData = writable({});
@@ -157,15 +160,7 @@ export function cekMqttMsg(data) {
             dataTaskNow[i].aktuatorMixOut = parseInt(msg_payload);
           } else if (msg_cmd === "aktuatorAduk") {
             dataTaskNow[i].aktuatorAduk = parseInt(msg_payload);
-          } else if (msg_cmd === "flowSensorA") {
-            dataTaskNow[i].flowSensorA = parseInt(msg_payload);
-          } else if (msg_cmd === "flowSensorB") {
-            dataTaskNow[i].flowSensorB = parseInt(msg_payload);
-          } else if (msg_cmd === "flowSensorC") {
-            dataTaskNow[i].flowSensorC = parseInt(msg_payload);
-          } else if (msg_cmd === "flowMixOut") {
-            dataTaskNow[i].flowMixOut = parseInt(msg_payload);
-          } else if (msg_cmd === "targetmixA") {
+          }else if (msg_cmd === "targetmixA") {
             dataTaskNow[i].targetmixA = parseInt(msg_payload);
           } else if (msg_cmd === "targetMixB") {
             dataTaskNow[i].targetMixB = parseInt(msg_payload);
@@ -173,6 +168,24 @@ export function cekMqttMsg(data) {
             dataTaskNow[i].targetMixC = parseInt(msg_payload);
           } else if (msg_cmd === "mixingTarget") {
             dataTaskNow[i].mixingTarget = parseInt(msg_payload);
+          } else if (msg_cmd === "sensorFlowAValue") {
+            dataTaskNow[i].flowAValue = parseInt(parseFloat(msg_payload) * 100);
+            let fa  = parseInt((dataTaskNow[i].flowAValue/dataTaskNow[i].targetmixA ) * 100);
+            if(fa > 100){
+              fa = 100;
+            }
+            flowAPersen = fa;
+          }else if (msg_cmd === "sensorFlowBValue") {
+            dataTaskNow[i].flowBValue = parseInt(parseFloat(msg_payload) *100);
+            let fb  = (dataTaskNow[i].flowBValue/dataTaskNow[i].targetmixB ) * 100;
+            if(fb > 100){
+              fb = 100;
+            }
+            flowBPersen = fb;
+          }else if (msg_cmd === "sensorFlowCValue") {
+            dataTaskNow[i].flowCValue = parseInt(parseFloat(msg_payload) *100);
+          }else if(msg_cmd === "sensorFlowMixOutValue"){
+            dataTaskNow[i].sensorFlowMixOutValue = parseInt(parseFloat(msg_payload) * 100);
           }
           break;
         }

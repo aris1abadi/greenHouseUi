@@ -31,6 +31,7 @@
   "type": "module",
   "dependencies": {
     "@popperjs/core": "^2.11.8",
+    "@sveltejs/adapter-node": "^5.2.9",
     "flowbite": "^2.5.2",
     "flowbite-svelte": "^0.46.23",
     "mqtt": "^5.10.1",
