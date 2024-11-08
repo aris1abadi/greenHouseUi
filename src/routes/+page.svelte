@@ -482,7 +482,7 @@
 		<div class="w-full h-full grid justify-items-center P-4 mt-8">
 			<!-- bluethooth -->
 
-			{#if $bleConnected}
+			{#if $bleIsConnected}
 				<button
 					class="w-1/4 h-8 border border-black mt-8"
 					on:click={() => tes()}>tes</button
