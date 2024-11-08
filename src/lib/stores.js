@@ -11,7 +11,8 @@ export let flowCPersen = writable();
 export const mqttClient = writable(null);
 export const mqttData = writable({});
 
-export let bleConnected = writable(false);
+let bleConnected = false;
+export let bleIsConnected = writable(false);
 export let logDisplay = writable("log console\n");
 export let mqttIsConnected = writable(false);
 
@@ -318,6 +319,7 @@ async function connect() {
         handleNotifications,
       );
       bleConnected = true;
+      bleIsConnected.set(true)
       ////window.term_.io.println('\r\n' + bleDevice.name + ' Connected.\n'
       nusSendString("\r\n");
       //setConnButtonState(true);
@@ -340,6 +342,7 @@ function disconnect() {
   if (bleDevice.gatt.connected) {
     bleDevice.gatt.disconnect();
     bleConnected = false;
+    bleIsConnected.set(false)
     //setConnButtonState(false);
     logDisplay +=
       "Bluetooth Device connected: " + bleDevice.gatt.connected;
@@ -350,6 +353,7 @@ function disconnect() {
 
 function onDisconnected() {
   bleConnected = false;
+  bleIsConnected.set(false)
   logDisplay += "\r\n" + bleDevice.name + " Disconnected.";
 }
 
