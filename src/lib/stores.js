@@ -11,6 +11,10 @@ export let flowCPersen = writable();
 export const mqttClient = writable(null);
 export const mqttData = writable({});
 
+export let bleConnected = writable(false);
+export let logDisplay = writable("log console\n");
+export let mqttIsConnected = writable(false);
+
 const subMqtt = "abadinet-out/AB5578/#";
 const pubMqtt = "abadinet-in/AB5578/";
 let clientId = "CL" + Math.random().toString(16).substr(2, 4).toUpperCase();
@@ -21,6 +25,9 @@ const brokerUrl = "wss://mqtt.eclipseprojects.io/mqtt:443";
 
 let lastMsg = null;
 let dataTaskNow;
+let mqttConnected = false
+
+
 
 const options = {
   keepalive: 30,
@@ -43,12 +50,19 @@ const dtSub = dataTask.subscribe((data) => {
   dataTaskNow = data; // Panggil fungsi untuk memperbarui sensorData
 });
 
+const mqttSub = mqttIsConnected.subscribe((data) => {
+  mqttConnected = data; // Panggil fungsi untuk memperbarui sensorData
+});
+
+
 // Fungsi untuk menginisialisasi MQTT Client (hanya sekali)
 // @ts-ignore
 export function initMqtt() {
   const client = mqtt.connect(brokerUrl, options);
 
   client.on("connect", () => {
+    mqttConnected = true
+    mqttIsConnected.set(true)
     console.log("Connected to MQTT broker");
     client.subscribe(subMqtt, { qos: 0 });
     let pubStatus = pubMqtt + "kontrol/0/status";
@@ -64,6 +78,7 @@ export function initMqtt() {
   });
 
   client.on("message", (topic, payload) => {
+    cekMqttMsg(topic,payload.toString())
     mqttData.update((data) => ({
       ...data,
       topic,
@@ -71,13 +86,26 @@ export function initMqtt() {
     }));
   });
 
+  client.on('close', () => {
+    mqttConnected = false;
+    mqttIsConnected.set(false)
+    console.log('Disconnected from MQTT broker');
+  });
+
   //mqttClient.set(client); // Simpan client MQTT di store
+}
+
+function mqttDisconnect() {
+  if (mqttConnected && client) {
+    client.end();
+    mqttConnected = false;
+  }
 }
 
 export function kirimMsg(type, num, cmd, msg) {
   const pubMqtt = "abadinet-in/AB5578/";
   let ms = pubMqtt + type + "/" + num + "/" + cmd;
-  const bleMsg = ms + ";" + msg + "\n";
+  const bleMsg = ms + ";" + msg + ";";
   mqttClient.subscribe((client) => {
     if (client) {
       client.publish(ms, msg, { qos: 0, retain: false });
@@ -85,14 +113,17 @@ export function kirimMsg(type, num, cmd, msg) {
       console.error("MQTT client is not connected");
     }
   });
+  if(bleConnected){
+    nusSendString(bleMsg)
+  }
 }
 
-export function cekMqttMsg(data) {
+function cekMqttMsg(topic,msg_payload) {
   //console.log("Sensor Data updated:", data);
 
   //const splitMsg = data.split(": '")
-  const topic = data.topic;
-  const msg_payload = data.msg;
+  //const topic = data.topic;
+  //const msg_payload = data.msg;
   const topicMqtt = topic ? topic.split("/") : [];
   if (topicMqtt.length > 0) {
     const serverId = topicMqtt[1];
@@ -160,7 +191,7 @@ export function cekMqttMsg(data) {
             dataTaskNow[i].aktuatorMixOut = parseInt(msg_payload);
           } else if (msg_cmd === "aktuatorAduk") {
             dataTaskNow[i].aktuatorAduk = parseInt(msg_payload);
-          }else if (msg_cmd === "targetmixA") {
+          } else if (msg_cmd === "targetmixA") {
             dataTaskNow[i].targetmixA = parseInt(msg_payload);
           } else if (msg_cmd === "targetMixB") {
             dataTaskNow[i].targetMixB = parseInt(msg_payload);
@@ -170,21 +201,21 @@ export function cekMqttMsg(data) {
             dataTaskNow[i].mixingTarget = parseInt(msg_payload);
           } else if (msg_cmd === "sensorFlowAValue") {
             dataTaskNow[i].flowAValue = parseInt(parseFloat(msg_payload) * 100);
-            let fa  = parseInt((dataTaskNow[i].flowAValue/dataTaskNow[i].targetmixA ) * 100);
-            if(fa > 100){
+            let fa = parseInt((dataTaskNow[i].flowAValue / dataTaskNow[i].targetmixA) * 100);
+            if (fa > 100) {
               fa = 100;
             }
             flowAPersen = fa;
-          }else if (msg_cmd === "sensorFlowBValue") {
-            dataTaskNow[i].flowBValue = parseInt(parseFloat(msg_payload) *100);
-            let fb  = (dataTaskNow[i].flowBValue/dataTaskNow[i].targetmixB ) * 100;
-            if(fb > 100){
+          } else if (msg_cmd === "sensorFlowBValue") {
+            dataTaskNow[i].flowBValue = parseInt(parseFloat(msg_payload) * 100);
+            let fb = (dataTaskNow[i].flowBValue / dataTaskNow[i].targetmixB) * 100;
+            if (fb > 100) {
               fb = 100;
             }
             flowBPersen = fb;
-          }else if (msg_cmd === "sensorFlowCValue") {
-            dataTaskNow[i].flowCValue = parseInt(parseFloat(msg_payload) *100);
-          }else if(msg_cmd === "sensorFlowMixOutValue"){
+          } else if (msg_cmd === "sensorFlowCValue") {
+            dataTaskNow[i].flowCValue = parseInt(parseFloat(msg_payload) * 100);
+          } else if (msg_cmd === "sensorFlowMixOutValue") {
             dataTaskNow[i].sensorFlowMixOutValue = parseInt(parseFloat(msg_payload) * 100);
           }
           break;
@@ -193,6 +224,194 @@ export function cekMqttMsg(data) {
       }
     }
   }
+}
+
+//bluethoot
+const bleNusServiceUUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
+const bleNusCharRXUUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
+const bleNusCharTXUUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+const MTU = 20;
+
+var bleDevice;
+var bleServer;
+var nusService;
+var rxCharacteristic;
+var txCharacteristic;
+let sendCount = 0;
+let btBuff = "";
+
+
+
+export function mqttConnectionToggle() {
+  if (mqttConnected) {
+    mqttDisconnect()
+    console.log("disconect mqtt")
+  } else {
+    console.log("connect mqtt")
+      initMqtt()
+   
+  }
+}
+
+export function bleConnectionToggle() {
+  if (bleConnected) {
+    disconnect();
+  } else {
+    connect();
+  }
+}
+
+async function connect() {
+  if (!navigator.bluetooth) {
+    logDisplay += "WebBluetooth API is not available.\r\n";
+    return;
+  }
+  logDisplay += "Requesting Bluetooth Device...\n";
+  navigator.bluetooth
+    .requestDevice({
+      //filters: [{services: []}]
+      optionalServices: [bleNusServiceUUID],
+      acceptAllDevices: true,
+    })
+    .then((device) => {
+      bleDevice = device;
+      logDisplay += "Found " + device.name;
+      logDisplay += "Connecting to GATT Server...\n";
+      bleDevice.addEventListener(
+        "gattserverdisconnected",
+        onDisconnected,
+      );
+      return device.gatt.connect();
+    })
+    .then((server) => {
+      logDisplay += "Locate NUS service\n";
+      return server.getPrimaryService(bleNusServiceUUID);
+    })
+    .then((service) => {
+      nusService = service;
+      logDisplay += "Found NUS service: " + service.uuid;
+    })
+    .then(() => {
+      logDisplay += "Locate RX characteristic\n";
+      return nusService.getCharacteristic(bleNusCharRXUUID);
+    })
+    .then((characteristic) => {
+      rxCharacteristic = characteristic;
+      logDisplay += "Found RX characteristic\n";
+    })
+    .then(() => {
+      logDisplay += "Locate TX characteristic\n";
+      return nusService.getCharacteristic(bleNusCharTXUUID);
+    })
+    .then((characteristic) => {
+      txCharacteristic = characteristic;
+      logDisplay += "Found TX characteristic\n";
+    })
+    .then(() => {
+      logDisplay += "Enable notifications\n";
+      return txCharacteristic.startNotifications();
+    })
+    .then(() => {
+      logDisplay += "Notifications started\n";
+      txCharacteristic.addEventListener(
+        "characteristicvaluechanged",
+        handleNotifications,
+      );
+      bleConnected = true;
+      ////window.term_.io.println('\r\n' + bleDevice.name + ' Connected.\n'
+      nusSendString("\r\n");
+      //setConnButtonState(true);
+    })
+    .catch((error) => {
+      logDisplay += error;
+      //window.term_.io.println('' + error);
+      if (bleDevice && bleDevice.gatt.connected) {
+        bleDevice.gatt.disconnect();
+      }
+    });
+}
+
+function disconnect() {
+  if (!bleDevice) {
+    logDisplay += "No Bluetooth Device connected...\n";
+    return;
+  }
+  logDisplay += "Disconnecting from Bluetooth Device...\n";
+  if (bleDevice.gatt.connected) {
+    bleDevice.gatt.disconnect();
+    bleConnected = false;
+    //setConnButtonState(false);
+    logDisplay +=
+      "Bluetooth Device connected: " + bleDevice.gatt.connected;
+  } else {
+    logDisplay += "> Bluetooth Device is already disconnected\n";
+  }
+}
+
+function onDisconnected() {
+  bleConnected = false;
+  logDisplay += "\r\n" + bleDevice.name + " Disconnected.";
+}
+
+function handleNotifications(event) {
+  logDisplay += "btMsg:\n";
+  let value = event.target.value;
+  // Convert raw data bytes to character values and use these to
+  // construct a string.
+  let chr = "";
+  let endMsg = false;
+  for (let i = 0; i < value.byteLength; i++) {
+    chr = String.fromCharCode(value.getUint8(i));
+    btBuff += chr;
+    if (chr == "\n") {
+      endMsg = true;
+
+      break;
+    }
+  }
+  if (endMsg) {
+    if (btBuff.length > 5) {
+      logDisplay += btBuff;
+
+      let btMsgSplit = btBuff.split('@')
+      const topic = btMsgSplit[0]
+      const msg = btMsgSplit[1]
+
+      cekMqttMsg(topic,msg)
+      
+    }
+    btBuff = "";
+  }
+}
+
+function nusSendString(s) {
+  if (bleDevice && bleDevice.gatt.connected) {
+    //logDisplay += 'send: ' + s;
+    s += "\n";
+    let val_arr = new Uint8Array(s.length);
+    for (let i = 0; i < s.length; i++) {
+      let val = s[i].charCodeAt(0);
+      val_arr[i] = val;
+    }
+    sendNextChunk(val_arr);
+  } else {
+    logDisplay += "Not connected to a device yet.";
+  }
+}
+
+function sendNextChunk(a) {
+  let chunk = a.slice(0, MTU);
+  rxCharacteristic.writeValue(chunk).then(function () {
+    if (a.length > MTU) {
+      sendNextChunk(a.slice(MTU));
+    }
+  });
+}
+
+export function tes() {
+  let st = "abadinet-in/AB5578/kontrol/0/getAllTask;1;";
+  nusSendString(st);
+  sendCount++;
 }
 /*
 

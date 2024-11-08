@@ -9,12 +9,18 @@
 		mqttClient,
 		mqttData,
 		initMqtt,
-		kirimMsg,
-		cekMqttMsg,
-        flowAPersen,
-        flowBPersen,
-        flowCPersen,
+		kirimMsg,		
+		flowAPersen,
+		flowBPersen,
+		flowCPersen,
+		bleConnectionToggle,
+		bleConnected,
+		mqttConnectionToggle,
+		mqttIsConnected,
+		logDisplay,
 	} from "$lib/stores";
+
+	import { tes } from "$lib/stores";
 
 	let defaultModal = false;
 	let dataTaskNow = null;
@@ -42,12 +48,15 @@
 	// @ts-ignore
 	let lastMsg = null;
 
+	
+
 	// @ts-ignore
 	let header = "Temperature";
 
 	// Gunakan onMount agar manipulasi DOM hanya terjadi di client-side
 	onMount(() => {
 		// Inisialisasi MQTT hanya jika belum ada koneksi
+		/*
 		mqttClient.subscribe((client) => {
 			if (!client) {
 				initMqtt(); // Koneksi pertama kali
@@ -62,6 +71,7 @@
 		return () => {
 			unsubscribe();
 		};
+		*/
 	});
 
 	// @ts-ignore
@@ -304,178 +314,10 @@
 		alert("nama MixA click");
 	}
 
+	
+
 	//update dataTask
 	//$: dataTask
-
-	//bluethoot
-	const bleNusServiceUUID = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
-	const bleNusCharRXUUID = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
-	const bleNusCharTXUUID = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
-	const MTU = 20;
-
-	var bleDevice;
-	var bleServer;
-	var nusService;
-	var rxCharacteristic;
-	var txCharacteristic;
-	let sendCount = 0;
-	let btBuff = "";
-
-	var connected = false;
-	let logDisplay = "log console\n";
-
-	function connectionToggle() {
-		if (connected) {
-			disconnect();
-		} else {
-			connect();
-		}
-	}
-
-	async function connect() {
-		if (!navigator.bluetooth) {
-			logDisplay += "WebBluetooth API is not available.\r\n";
-			return;
-		}
-		logDisplay += "Requesting Bluetooth Device...\n";
-		navigator.bluetooth
-			.requestDevice({
-				//filters: [{services: []}]
-				optionalServices: [bleNusServiceUUID],
-				acceptAllDevices: true,
-			})
-			.then((device) => {
-				bleDevice = device;
-				logDisplay += "Found " + device.name;
-				logDisplay += "Connecting to GATT Server...\n";
-				bleDevice.addEventListener(
-					"gattserverdisconnected",
-					onDisconnected,
-				);
-				return device.gatt.connect();
-			})
-			.then((server) => {
-				logDisplay += "Locate NUS service\n";
-				return server.getPrimaryService(bleNusServiceUUID);
-			})
-			.then((service) => {
-				nusService = service;
-				logDisplay += "Found NUS service: " + service.uuid;
-			})
-			.then(() => {
-				logDisplay += "Locate RX characteristic\n";
-				return nusService.getCharacteristic(bleNusCharRXUUID);
-			})
-			.then((characteristic) => {
-				rxCharacteristic = characteristic;
-				logDisplay += "Found RX characteristic\n";
-			})
-			.then(() => {
-				logDisplay += "Locate TX characteristic\n";
-				return nusService.getCharacteristic(bleNusCharTXUUID);
-			})
-			.then((characteristic) => {
-				txCharacteristic = characteristic;
-				logDisplay += "Found TX characteristic\n";
-			})
-			.then(() => {
-				logDisplay += "Enable notifications\n";
-				return txCharacteristic.startNotifications();
-			})
-			.then(() => {
-				logDisplay += "Notifications started\n";
-				txCharacteristic.addEventListener(
-					"characteristicvaluechanged",
-					handleNotifications,
-				);
-				connected = true;
-				////window.term_.io.println('\r\n' + bleDevice.name + ' Connected.\n'
-				nusSendString("\r\n");
-				//setConnButtonState(true);
-			})
-			.catch((error) => {
-				logDisplay += error;
-				//window.term_.io.println('' + error);
-				if (bleDevice && bleDevice.gatt.connected) {
-					bleDevice.gatt.disconnect();
-				}
-			});
-	}
-
-	function disconnect() {
-		if (!bleDevice) {
-			logDisplay += "No Bluetooth Device connected...\n";
-			return;
-		}
-		logDisplay += "Disconnecting from Bluetooth Device...\n";
-		if (bleDevice.gatt.connected) {
-			bleDevice.gatt.disconnect();
-			connected = false;
-			//setConnButtonState(false);
-			logDisplay +=
-				"Bluetooth Device connected: " + bleDevice.gatt.connected;
-		} else {
-			logDisplay += "> Bluetooth Device is already disconnected\n";
-		}
-	}
-
-	function onDisconnected() {
-		connected = false;
-		logDisplay += "\r\n" + bleDevice.name + " Disconnected.";
-	}
-
-	function handleNotifications(event) {
-		logDisplay += "btMsg:\n";
-		let value = event.target.value;
-		// Convert raw data bytes to character values and use these to
-		// construct a string.
-		let chr = "";
-		let endMsg = false;
-		for (let i = 0; i < value.byteLength; i++) {
-			chr = String.fromCharCode(value.getUint8(i));
-			btBuff += chr;
-			if (chr == "\n") {
-				endMsg = true;
-				break;
-			}
-		}
-		if (endMsg) {
-			if (btBuff.length > 5) {
-				logDisplay += btBuff;
-			}
-			btBuff = "";
-		}
-	}
-
-	function nusSendString(s) {
-		if (bleDevice && bleDevice.gatt.connected) {
-			//logDisplay += 'send: ' + s;
-			s += "\n";
-			let val_arr = new Uint8Array(s.length);
-			for (let i = 0; i < s.length; i++) {
-				let val = s[i].charCodeAt(0);
-				val_arr[i] = val;
-			}
-			sendNextChunk(val_arr);
-		} else {
-			logDisplay += "Not connected to a device yet.";
-		}
-	}
-
-	function sendNextChunk(a) {
-		let chunk = a.slice(0, MTU);
-		rxCharacteristic.writeValue(chunk).then(function () {
-			if (a.length > MTU) {
-				sendNextChunk(a.slice(MTU));
-			}
-		});
-	}
-
-	function tes() {
-		let st = "abadinet-in/AB5578/kontrol/0/getAllTask;1;";
-		nusSendString(st);
-		sendCount++;
-	}
 </script>
 
 <svelte:head>
@@ -583,9 +425,10 @@
 									></div>
 								</div>
 
-								<div class="text-xs">Aduk({dataShow.mixingTarget}detik) > {dataShow.mixingCount}</div>
+								<div class="text-xs">
+									Aduk({dataShow.mixingTarget}detik) > {dataShow.mixingCount}
+								</div>
 							</div>
-							
 						</div>
 					{:else}
 						<div
@@ -609,22 +452,40 @@
 		{/each}
 	</div>
 	<div>
-		<!-- bluethooth -->
-		<div class="w-full h-full grid justify-items-center P-4">
+		<div class="w-full h-8 grid grid-cols-2 gap-2">
 			<button
-				on:click={() => connectionToggle()}
+				on:click={() => bleConnectionToggle()}
 				type="button"
-				class={connected
+				class={$bleConnected
 					? "mt-8 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
 					: "mt-8 py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"}
 			>
-				{#if connected == true}
+				{#if $bleConnected}
 					Disconnect
 				{:else}
 					Connect Bluethooth
 				{/if}
 			</button>
-			{#if connected}
+
+			<button
+				on:click={() => mqttConnectionToggle()}
+				type="button"
+				class={$mqttIsConnected
+					? "mt-8 text-white bg-lime-600 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800"
+					: "mt-8 py-2.5 px-5 me-2 mb-2 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700"}
+			>
+				{#if $mqttIsConnected}
+					Disconnect
+				{:else}
+					Connect Server
+				{/if}
+			</button>
+		</div>
+
+		<div class="w-full h-full grid justify-items-center P-4 mt-8">
+			<!-- bluethooth -->
+
+			{#if $bleConnected}
 				<button
 					class="w-1/4 h-8 border border-black mt-8"
 					on:click={() => tes()}>tes</button
@@ -965,19 +826,5 @@
 		background-position: center; /* Pusatkan gambar */
 
 		background-repeat: no-repeat; /* Jangan ulangi gambar */
-	}
-
-	.tk {
-		position: relative;
-		width: 40%;
-		height: 90%;
-		padding-top: 40px;
-		margin: 0 auto;
-		background: rgba(56, 56, 56, 0.8);
-		border-radius: 100%/40px;
-		border-bottom: 3px solid #000;
-		text-align: center;
-		z-index: 1;
-		overflow: hidden;
 	}
 </style>
