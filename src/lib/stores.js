@@ -321,7 +321,7 @@ async function connect() {
       bleConnected = true;
       bleIsConnected.set(true)
       ////window.term_.io.println('\r\n' + bleDevice.name + ' Connected.\n'
-      nusSendString("\r\n");
+      tes();
       //setConnButtonState(true);
     })
     .catch((error) => {
