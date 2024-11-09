@@ -198,22 +198,22 @@ function cekMqttMsg(topic,msg_payload) {
             dataTaskNow[i].targetMixB = parseInt(msg_payload);
           } else if (msg_cmd === "targetMixC") {
             dataTaskNow[i].targetMixC = parseInt(msg_payload);
-          } else if (msg_cmd === "mixingTarget") {
+          } else if (msg_cmd === "mixingCount") {
+            dataTaskNow[i].mixingCount = parseInt(msg_payload);
+          }else if (msg_cmd === "mixingTarget") {
             dataTaskNow[i].mixingTarget = parseInt(msg_payload);
           } else if (msg_cmd === "sensorFlowAValue") {
             dataTaskNow[i].flowAValue = parseInt(parseFloat(msg_payload) * 100);
             let fa = parseInt((dataTaskNow[i].flowAValue / dataTaskNow[i].targetmixA) * 100);
-            if (fa > 100) {
-              fa = 100;
-            }
-            flowAPersen = fa;
+            
+            flowAPersen.set(fa);
           } else if (msg_cmd === "sensorFlowBValue") {
             dataTaskNow[i].flowBValue = parseInt(parseFloat(msg_payload) * 100);
-            let fb = (dataTaskNow[i].flowBValue / dataTaskNow[i].targetmixB) * 100;
+            let fb = parseInt((dataTaskNow[i].flowBValue / (dataTaskNow[i].targetmixB * 100)) * 100);
             if (fb > 100) {
               fb = 100;
             }
-            flowBPersen = fb;
+            flowBPersen.set(fb);
           } else if (msg_cmd === "sensorFlowCValue") {
             dataTaskNow[i].flowCValue = parseInt(parseFloat(msg_payload) * 100);
           } else if (msg_cmd === "sensorFlowMixOutValue") {

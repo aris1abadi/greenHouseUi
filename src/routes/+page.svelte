@@ -392,7 +392,7 @@
 								>
 									<div
 										class="h-1.5 bg-blue-600 rounded-full"
-										style="width: {$flowAPersen}%;"
+										style="width: {(dataShow.flowAValue/(dataShow.targetMixA * 100) * 100)}%;"
 									></div>
 								</div>
 
@@ -405,7 +405,7 @@
 								>
 									<div
 										class="h-1.5 bg-blue-500 rounded-full"
-										style="width: {$flowBPersen}%;"
+										style="width: {(dataShow.flowBValue/(dataShow.targetMixB * 100) * 100)}%;"
 									></div>
 								</div>
 								<!-- Mix C-->
@@ -418,7 +418,7 @@
 								>
 									<div
 										class="h-1.5 bg-blue-600 rounded-full"
-										style="width: {$flowCPersen}%;"
+										style="width: {(dataShow.flowCValue/(dataShow.targetMixC * 100) * 100)}%;"
 									></div>
 								</div>
 
@@ -479,21 +479,7 @@
 			</button>
 		</div>
 
-		<div class="w-full h-full grid justify-items-center P-4 mt-8">
-			<!-- bluethooth -->
-
-			{#if $bleIsConnected}
-				<button
-					class="w-1/4 h-8 border border-black mt-8"
-					on:click={() => tes()}>tes</button
-				>
-				<div
-					class=" mt-4 w-11/12 h-64 container mx-auto overflow-auto border border-black"
-				>
-					{logDisplay}
-				</div>
-			{/if}
-		</div>
+		
 	</div>
 
 	<Modal class="w-6/10" title={setupTitle} bind:open={defaultModal} autoclose>
