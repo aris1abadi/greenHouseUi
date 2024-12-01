@@ -2,7 +2,6 @@ import { writable } from "svelte/store";
 //import { persisted } from 'svelte-persisted-store'
 import mqtt from "mqtt";
 import { dev } from "$app/environment";
-
 export const dataTask = writable([]);
 export let flowAPersen = writable();
 export let flowBPersen = writable();
