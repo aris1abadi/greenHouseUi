@@ -16,13 +16,14 @@ export let bleIsConnected = writable(false);
 export let logDisplay = writable("log console\n");
 export let mqttIsConnected = writable(false);
 
-const subMqtt = "abadinet-out/AB5578/#";
-const pubMqtt = "abadinet-in/AB5578/";
+const subMqtt = "abadinet-out/KA51200/#";
+const pubMqtt = "abadinet-in/KA51200/";
 let clientId = "CL" + Math.random().toString(16).substr(2, 4).toUpperCase();
 //const host = 'ws://abadinet.my.id:2020'
 //const host = 'wss://node-red.balingtansmart.my.id/ws'
 //const host =  'ws://'+ get(brokerUseStore) + '/mqtt:' + get(brokerPortUseStore);
-const brokerUrl = "wss://mqtt.eclipseprojects.io/mqtt:443";
+//const brokerUrl = "wss://mqtt.eclipseprojects.io/mqtt:443";
+const brokerUrl = "ws://mqtt.eclipseprojects.io/mqtt:80";
 
 let lastMsg = null;
 let dataTaskNow;
@@ -104,7 +105,7 @@ function mqttDisconnect() {
 }
 
 export function kirimMsg(type, num, cmd, msg) {
-  const pubMqtt = "abadinet-in/AB5578/";
+  const pubMqtt = "abadinet-in/KA51200/";                             
   let ms = pubMqtt + type + "/" + num + "/" + cmd;
   const bleMsg = ms + ";" + msg + ";";
   mqttClient.subscribe((client) => {
@@ -125,6 +126,7 @@ function cekMqttMsg(topic,msg_payload) {
   //const splitMsg = data.split(": '")
   //const topic = data.topic;
   //const msg_payload = data.msg;
+  //console.log(topic + '  >  ' + msg_payload)
   const topicMqtt = topic ? topic.split("/") : [];
   if (topicMqtt.length > 0) {
     const serverId = topicMqtt[1];
@@ -138,7 +140,7 @@ function cekMqttMsg(topic,msg_payload) {
           lastMsg = msg_payload;
           let msgSplit = msg_payload.split(";");
           let newArray = []; // Array sementara untuk menampung data
-          // console.log(msg_payload)
+           
           //dataTask.set([]); // Kosongkan store sebelum diisi ulang
 
           for (let i = 0; i < msgSplit.length; i++) {
@@ -198,7 +200,7 @@ function cekMqttMsg(topic,msg_payload) {
             dataTaskNow[i].targetMixB = parseInt(msg_payload);
           } else if (msg_cmd === "targetMixC") {
             dataTaskNow[i].targetMixC = parseInt(msg_payload);
-          } else if (msg_cmd === "mixingCount") {
+          } else if (msg_cmd === "sensorMixingCountValue") {
             dataTaskNow[i].mixingCount = parseInt(msg_payload);
           }else if (msg_cmd === "mixingTarget") {
             dataTaskNow[i].mixingTarget = parseInt(msg_payload);

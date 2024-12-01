@@ -5,8 +5,8 @@
 	import { onMount } from "svelte";
 
 	import {
-		dataTask,		
-		kirimMsg,		
+		dataTask,
+		kirimMsg,
 		flowAPersen,
 		flowBPersen,
 		flowCPersen,
@@ -44,8 +44,6 @@
 	let setupTitle = "Setup";
 	// @ts-ignore
 	let lastMsg = null;
-
-	
 
 	// @ts-ignore
 	let header = "Temperature";
@@ -242,7 +240,7 @@
 		alert("sensor temperture select: " + sensorSelect + 1);
 	}
 
-	function batasBawahChange(idx) {
+	function batasBawahChange() {
 		const tp = "auto" + $dataTask[setupIndex].nama;
 		if (tp === "autoIntermittent") {
 			kirimMsg(tp, 1, "targetBawah", String(batasBawahValue + 15));
@@ -255,7 +253,7 @@
 		alert("Target bawah: " + batasBawahValue);
 	}
 
-	function batasAtasChange(idx) {
+	function batasAtasChange() {
 		const tp = "auto" + $dataTask[setupIndex].nama;
 		if (tp === "autoIntermittent") {
 			kirimMsg(tp, 1, "targetAtas", String(batasAtasValue + 15));
@@ -274,7 +272,7 @@
 		$dataTask[setupIndex].targetMixA = targetAValue / 100;
 		alert(
 			"Target " +
-				$dataTask[setupIndex].namaMixA +
+				$dataTask[setupIndex].mixANama +
 				":" +
 				targetAValue +
 				"mL",
@@ -287,7 +285,7 @@
 		$dataTask[setupIndex].targetMixB = targetBValue / 100;
 		alert(
 			"Target " +
-				$dataTask[setupIndex].namaMixB +
+				$dataTask[setupIndex].mixBNama +
 				":" +
 				targetBValue +
 				"mL",
@@ -300,7 +298,7 @@
 		$dataTask[setupIndex].targetMixC = targetCValue / 100;
 		alert(
 			"Target " +
-				$dataTask[setupIndex].namaMixC +
+				$dataTask[setupIndex].mixCNama +
 				":" +
 				targetCValue +
 				"mL",
@@ -310,8 +308,6 @@
 	function mixAClick() {
 		alert("nama MixA click");
 	}
-
-	
 
 	//update dataTask
 	//$: dataTask
@@ -323,6 +319,9 @@
 </svelte:head>
 
 <section>
+	<!--Header-->
+	<div class="text-sm text-center">karjoAgro</div>
+	<div class="text-4xl font-bold font-mono text-white text-center mb-8">Agro Kontrol</div>
 	<div class="grid grid-cols-2 w-full gap-8 no-select">
 		{#each $dataTask as dataShow, idx}
 			<div
@@ -392,7 +391,9 @@
 								>
 									<div
 										class="h-1.5 bg-blue-600 rounded-full"
-										style="width: {(dataShow.flowAValue/(dataShow.targetMixA * 100) * 100)}%;"
+										style="width: {(dataShow.flowAValue /
+											(dataShow.targetMixA * 100)) *
+											100}%;"
 									></div>
 								</div>
 
@@ -405,7 +406,9 @@
 								>
 									<div
 										class="h-1.5 bg-blue-500 rounded-full"
-										style="width: {(dataShow.flowBValue/(dataShow.targetMixB * 100) * 100)}%;"
+										style="width: {(dataShow.flowBValue /
+											(dataShow.targetMixB * 100)) *
+											100}%;"
 									></div>
 								</div>
 								<!-- Mix C-->
@@ -418,7 +421,9 @@
 								>
 									<div
 										class="h-1.5 bg-blue-600 rounded-full"
-										style="width: {(dataShow.flowCValue/(dataShow.targetMixC * 100) * 100)}%;"
+										style="width: {(dataShow.flowCValue /
+											(dataShow.targetMixC * 100)) *
+											100}%;"
 									></div>
 								</div>
 
@@ -478,8 +483,6 @@
 				{/if}
 			</button>
 		</div>
-
-		
 	</div>
 
 	<Modal class="w-6/10" title={setupTitle} bind:open={defaultModal} autoclose>
@@ -506,25 +509,21 @@
 					<label
 						for="targetA"
 						class="block mb-1 text-xs dark:text-white"
-						>Target {$dataTask[setupIndex].mixANama}</label
+						>Target {$dataTask[setupIndex].mixANama}
+						{targetAValue}mL</label
 					>
-					<span>
-						<NumberSpinner
+					<span
+						><input
 							id="targetA"
-							bind:value={targetAValue}
+							type="range"
 							min="100"
 							max="5000"
 							step="100"
-							mainStyle="color:#aaa; width:80px; border-radius:20px"
-							focusStyle="color:#06f"
-							draggingStyle="border-color:#f00"
-							editingStyle="color:#00f; background-color:#06f4"
-							fastStyle="color:#f00"
-							slowStyle="color:#0c0"
-							cursor="pointer"
-							on:dragend={() => targetAValue_change()}
-						/>
-					</span> mL
+							bind:value={targetAValue}
+							class="w-full h-2 mb-6 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+							on:change= {targetAValue_change}
+							/>
+					</span>
 				</div>
 
 				<div>
@@ -548,25 +547,21 @@
 					<label
 						for="targetB"
 						class="block mb-1 text-xs dark:text-white"
-						>Target {$dataTask[setupIndex].mixBNama}</label
+						>Target {$dataTask[setupIndex].mixBNama} {targetBValue}mL</label
 					>
 					<span>
-						<NumberSpinner
+						<input
 							id="targetB"
-							bind:value={targetBValue}
+							type="range"
 							min="100"
 							max="5000"
 							step="100"
-							mainStyle="color:#aaa; width:80px; border-radius:20px"
-							focusStyle="color:#06f"
-							draggingStyle="border-color:#f00"
-							editingStyle="color:#00f; background-color:#06f4"
-							fastStyle="color:#f00"
-							slowStyle="color:#0c0"
-							cursor="pointer"
-							on:dragend={() => targetBValue_change()}
-						/>
-					</span> mL
+							bind:value={targetBValue}
+							class="w-full h-2 mb-6 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+							on:change= {targetBValue_change}
+						
+							/>
+					</span>
 				</div>
 
 				<div>
@@ -590,25 +585,20 @@
 					<label
 						for="targetC"
 						class="block mb-1 text-xs dark:text-white"
-						>Target {$dataTask[setupIndex].mixCNama}</label
+						>Target {$dataTask[setupIndex].mixCNama} {targetCValue}mL</label
 					>
 					<span>
-						<NumberSpinner
+						<input
 							id="targetC"
 							bind:value={targetCValue}
+							type="range"
 							min="100"
 							max="30000"
 							step="100"
-							mainStyle="color:#aaa; width:80px; border-radius:20px"
-							focusStyle="color:#06f"
-							draggingStyle="border-color:#f00"
-							editingStyle="color:#00f; background-color:#06f4"
-							fastStyle="color:#f00"
-							slowStyle="color:#0c0"
-							cursor="pointer"
-							on:dragend={() => targetCValue_change()}
+							class="w-full h-2 mb-6 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+							on:change= {targetCValue_change}
 						/>
-					</span> mL
+					</span>
 				</div>
 
 				<div>
@@ -742,40 +732,30 @@
 
 			<div class="grid grid-cols-2 justify-items-center">
 				{#if $dataTask[setupIndex].inverseMode == 0}
-					<div>ON</div>
-					<div>OFF</div>
+					<div>OFF({batasBawahValue})</div>
+					<div>ON({batasAtasValue})</div>
 				{:else}
-					<div>OFF</div>
-					<div>ON</div>
+					<div>ON({batasBawahValue})</div>
+					<div>OFF({batasAtasValue})</div>
 				{/if}
-				<NumberSpinner
+				<input
 					bind:value={batasBawahValue}
 					min={minSpinner}
 					max={batasAtasValue - 1}
 					step="1"
-					mainStyle="color:#aaa; width:80px; border-radius:20px"
-					focusStyle="color:#06f"
-					draggingStyle="border-color:#f00"
-					editingStyle="color:#00f; background-color:#06f4"
-					fastStyle="color:#f00"
-					slowStyle="color:#0c0"
-					cursor="pointer"
-					on:dragend={() => batasBawahChange(setupIndex)}
+					type="range"
+					class="w-5/6 h-2 mb-6 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+					on:change={batasBawahChange}
 				/>
 
-				<NumberSpinner
+				<input
 					bind:value={batasAtasValue}
 					min={batasBawahValue + 1}
 					max={maxSpinner}
 					step="1"
-					mainStyle="color:#aaa; width:80px; border-radius:20px"
-					focusStyle="color:#06f"
-					draggingStyle="border-color:#f00"
-					editingStyle="color:#00f; background-color:#06f4"
-					fastStyle="color:#f00"
-					slowStyle="color:#0c0"
-					cursor="pointer"
-					on:dragend={() => batasAtasChange(setupIndex)}
+					type="range"
+					class="w-5/6 h-2 mb-6 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
+					on:change={batasAtasChange}
 				/>
 			</div>
 		{/if}
@@ -790,8 +770,8 @@
 	section {
 		display: flex;
 		flex-direction: column;
-		justify-content: center;
-		align-items: center;
+		justify-content: top;
+		align-items: top;
 		flex: 0.6;
 	}
 
@@ -801,13 +781,5 @@
 		-ms-user-select: none;
 		user-select: none;
 	}
-	.background {
-		width: 100%; /* Lebar elemen 100% dari lebar kontainer */
-		height: 100%; /* Tinggi elemen */
-		background-image: url("awan.jpg"); /* URL gambar */
-		background-size: cover; /* Sesuaikan gambar agar menutupi elemen */
-		background-position: center; /* Pusatkan gambar */
-
-		background-repeat: no-repeat; /* Jangan ulangi gambar */
-	}
+	
 </style>
