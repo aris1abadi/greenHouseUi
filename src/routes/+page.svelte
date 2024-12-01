@@ -230,6 +230,10 @@
 			kirimMsg(tp, 1, "aktuatorMixC", String(aktuatorMixCSelect + 1));
 			$dataTask[setupIndex].aktuatorMixC = aktuatorMixCSelect + 1;
 			alert("pilih aktuatorMix C " + (aktuatorMixCSelect + 1));
+		}else if (num == 6) {
+			kirimMsg(tp, 1, "aktuatorMixOut", String(aktuatorMixOutSelect + 1));
+			$dataTask[setupIndex].aktuatorMixOut = aktuatorMixOutSelect + 1;
+			alert("pilih aktuatorMix Out " + (aktuatorMixOutSelect + 1));
 		}
 	}
 	function sensorSelect_click() {
