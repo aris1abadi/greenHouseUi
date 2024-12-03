@@ -15,6 +15,7 @@ export let bleIsConnected = writable(false);
 export let logDisplay = writable("log console\n");
 export let mqttIsConnected = writable(false);
 
+
 const subMqtt = "abadinet-out/KA51200/#";
 const pubMqtt = "abadinet-in/KA51200/";
 let clientId = "CL" + Math.random().toString(16).substr(2, 4).toUpperCase();

@@ -67,6 +67,7 @@
 			unsubscribe();
 		};
 		*/
+		setTimeout(openFullscreen,5000)
 	});
 
 	// @ts-ignore
@@ -521,7 +522,7 @@
 							id="targetA"
 							type="range"
 							min="100"
-							max="5000"
+							max="1000"
 							step="100"
 							bind:value={targetAValue}
 							class="w-full h-2 mb-6 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
@@ -558,7 +559,7 @@
 							id="targetB"
 							type="range"
 							min="100"
-							max="5000"
+							max="1000"
 							step="100"
 							bind:value={targetBValue}
 							class="w-full h-2 mb-6 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
@@ -597,7 +598,7 @@
 							bind:value={targetCValue}
 							type="range"
 							min="100"
-							max="30000"
+							max="2000"
 							step="100"
 							class="w-full h-2 mb-6 bg-gray-200 rounded-lg appearance-none cursor-pointer dark:bg-gray-700"
 							on:change= {targetCValue_change}
