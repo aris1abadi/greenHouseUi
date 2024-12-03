@@ -214,27 +214,27 @@
 			//kirimMsg(type, num, cmd, msg)
 			kirimMsg(tp, 1, "aktuatorUse1", String(aktuator1Select + 1));
 			$dataTask[setupIndex].aktuatorUse1 = aktuator1Select + 1;
-			alert("pilih aktuator1 " + (aktuator1Select + 1));
+			//alert("pilih aktuator1 " + (aktuator1Select + 1));
 		} else if (num == 2) {
 			kirimMsg(tp, 1, "aktuatorUse2", String(aktuator2Select + 1));
 			$dataTask[setupIndex].aktuatorUse2 = aktuator2Select + 1;
-			alert("pilih aktuator2 " + (aktuator2Select + 1));
+			//alert("pilih aktuator2 " + (aktuator2Select + 1));
 		} else if (num == 3) {
 			kirimMsg(tp, 1, "aktuatorMixA", String(aktuatorMixASelect + 1));
 			$dataTask[setupIndex].aktuatorMixA = aktuatorMixASelect + 1;
-			alert("pilih aktuatorMix A " + (aktuatorMixASelect + 1));
+			//alert("pilih aktuatorMix A " + (aktuatorMixASelect + 1));
 		} else if (num == 4) {
 			kirimMsg(tp, 1, "aktuatorMixB", String(aktuatorMixBSelect + 1));
 			$dataTask[setupIndex].aktuatorMixB = aktuatorMixBSelect + 1;
-			alert("pilih aktuatorMix B " + (aktuatorMixBSelect + 1));
+			//alert("pilih aktuatorMix B " + (aktuatorMixBSelect + 1));
 		} else if (num == 5) {
 			kirimMsg(tp, 1, "aktuatorMixC", String(aktuatorMixCSelect + 1));
 			$dataTask[setupIndex].aktuatorMixC = aktuatorMixCSelect + 1;
-			alert("pilih aktuatorMix C " + (aktuatorMixCSelect + 1));
+			//alert("pilih aktuatorMix C " + (aktuatorMixCSelect + 1));
 		}else if (num == 6) {
 			kirimMsg(tp, 1, "aktuatorMixOut", String(aktuatorMixOutSelect + 1));
 			$dataTask[setupIndex].aktuatorMixOut = aktuatorMixOutSelect + 1;
-			alert("pilih aktuatorMix Out " + (aktuatorMixOutSelect + 1));
+			//alert("pilih aktuatorMix Out " + (aktuatorMixOutSelect + 1));
 		}
 	}
 	function sensorSelect_click() {
@@ -242,7 +242,7 @@
 		kirimMsg(tp, 1, "sensorUse1", String(sensorSelect + 1));
 		$dataTask[setupIndex].sensorUse1 = sensorSelect + 1;
 
-		alert("sensor temperture select: " + sensorSelect + 1);
+		//alert("sensor temperture select: " + sensorSelect + 1);
 	}
 
 	function batasBawahChange() {
@@ -255,7 +255,7 @@
 			$dataTask[setupIndex].targetBawah = batasBawahValue;
 		}
 
-		alert("Target bawah: " + batasBawahValue);
+		//alert("Target bawah: " + batasBawahValue);
 	}
 
 	function batasAtasChange() {
@@ -268,26 +268,27 @@
 			$dataTask[setupIndex].targetAtas = batasAtasValue;
 		}
 
-		alert("Target atas: " + batasAtasValue);
+		//alert("Target atas: " + batasAtasValue);
 	}
 
 	function targetAValue_change() {
 		const tp = "auto" + $dataTask[setupIndex].nama;
 		kirimMsg(tp, 1, "targetMixA", String(targetAValue / 100));
 		$dataTask[setupIndex].targetMixA = targetAValue / 100;
-		alert(
-			"Target " +
-				$dataTask[setupIndex].mixANama +
-				":" +
-				targetAValue +
-				"mL",
-		);
+		//alert(
+		//	"Target " +
+		//		$dataTask[setupIndex].mixANama +
+		//		":" +
+		//		targetAValue +
+		//		"mL",
+		//);
 	}
 
 	function targetBValue_change() {
 		const tp = "auto" + $dataTask[setupIndex].nama;
 		kirimMsg(tp, 1, "targetMixB", String(targetBValue / 100));
 		$dataTask[setupIndex].targetMixB = targetBValue / 100;
+		/*
 		alert(
 			"Target " +
 				$dataTask[setupIndex].mixBNama +
@@ -295,23 +296,25 @@
 				targetBValue +
 				"mL",
 		);
+		**/
 	}
 
 	function targetCValue_change() {
 		const tp = "auto" + $dataTask[setupIndex].nama;
 		kirimMsg(tp, 1, "targetMixC", String(targetCValue / 100));
 		$dataTask[setupIndex].targetMixC = targetCValue / 100;
-		alert(
+		
+		/*alert(
 			"Target " +
 				$dataTask[setupIndex].mixCNama +
 				":" +
 				targetCValue +
 				"mL",
-		);
+		);*/
 	}
 
 	function mixAClick() {
-		alert("nama MixA click");
+		//alert("nama MixA click");
 	}
 
 	//update dataTask
