@@ -22,7 +22,7 @@ import '../app.css';
 	.mainbg {
 		width: 100%; /* Lebar elemen 100% dari lebar kontainer */
 		height: 100%; /* Tinggi elemen */
-		background-image: url("tumbuh1.jpeg"); /* URL gambar */
+		background-image: url("/tumbuh1.jpeg"); /* URL gambar */
 		background-size: cover; /* Sesuaikan gambar agar menutupi elemen */
 		background-position: center; /* Pusatkan gambar */
 
